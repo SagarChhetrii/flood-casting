@@ -86,7 +86,7 @@ export default function RightPanel({
   };
 
   return (
-    <div className="col-span-12 lg:col-span-5 xl:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-2xl flex flex-col overflow-hidden shadow-sm">
+    <div className="col-span-12 lg:col-span-5 xl:col-span-4 min-w-0 min-h-0 w-full bg-surface-container-lowest border border-outline-variant rounded-2xl flex flex-col overflow-hidden shadow-sm">
       {/* Panel Header */}
       <div className="px-lg py-md border-b border-outline-variant bg-surface-container flex flex-col gap-xs">
         <div className="flex justify-between items-center">
@@ -237,4 +237,3 @@ export default function RightPanel({
     </div>
   );
 }
-

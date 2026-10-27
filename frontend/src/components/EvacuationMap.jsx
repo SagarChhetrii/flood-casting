@@ -241,7 +241,7 @@ export default function EvacuationMap({
     }
   });
   return (
-    <div className="col-span-12 lg:col-span-7 xl:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-2xl flex flex-col overflow-hidden relative shadow-md h-[380px] sm:h-[450px] lg:h-full min-h-[350px] lg:min-h-[500px]">
+    <div className="col-span-12 lg:col-span-7 xl:col-span-8 min-w-0 min-h-0 w-full bg-surface-container-lowest border border-outline-variant rounded-2xl flex flex-col overflow-hidden relative shadow-md h-[380px] sm:h-[450px] lg:h-full lg:max-h-full min-h-[350px] lg:min-h-0">
       {/* Live Telemetry Banner Overlay */}
       <div className="absolute top-md left-md right-md flex justify-between items-start z-[450] pointer-events-none">
         <div className="pointer-events-auto bg-surface-container-lowest bg-opacity-85 backdrop-blur-sm border border-outline-variant p-sm rounded shadow-sm">

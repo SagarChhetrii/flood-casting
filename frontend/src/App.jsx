@@ -14,6 +14,7 @@ import NotificationToast from './components/NotificationToast';
 import CivilianSubmissionModal from './components/CivilianSubmissionModal';
 import EvacuationAlertSystem from './components/EvacuationAlertSystem';
 import AdminAlertBroadcast from './components/AdminAlertBroadcast';
+import PravahaOverview from './components/PravahaOverview';
 import {
   getRoads,
   getShelters,
@@ -668,8 +669,16 @@ export default function App() {
         )}
 
         {/* Dynamic View Canvas based on activeTab */}
-        <main className="flex-1 bg-surface-container-low overflow-y-auto flex flex-col p-md gap-md">
-          {activeTab === 'disasters' ? (
+        <main className="flex-1 min-w-0 min-h-0 bg-surface-container-low overflow-y-auto flex flex-col p-md gap-md">
+          {activeTab === 'overview' ? (
+            <PravahaOverview
+              roads={roads}
+              shelters={shelters}
+              disasters={disasters}
+              apiConnected={apiConnected}
+              activeRoute={activeRoute}
+            />
+          ) : activeTab === 'disasters' ? (
             <>
               <AdminAlertBroadcast
                 disasters={disasters}
@@ -723,7 +732,7 @@ export default function App() {
               />
 
               {/* Map-First 12-Column Operational Grid */}
-              <div className="flex-1 grid grid-cols-12 gap-md min-h-0">
+              <div className="flex-1 min-w-0 min-h-0 w-full grid grid-cols-12 gap-md auto-rows-fr">
                 {/* Primary Operational Focus: Dominant Telemetry Map (~65% width) */}
                 <EvacuationMap
                   roads={roads}

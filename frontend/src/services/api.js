@@ -82,6 +82,17 @@ export async function getHealth() {
 }
 export const fetchHealthStatus = getHealth;
 
+/**
+ * Calculate the transparent post-flood surveillance-priority baseline.
+ * This is not a diagnosis or outbreak prediction.
+ */
+export async function estimateHealthRisk(payload) {
+  return request('/health-risk', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
 
 /**
  * Fetch all roads in active network

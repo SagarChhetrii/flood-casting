@@ -16,10 +16,10 @@ export default function Header({
         </div>
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-            Flood Casting
+            PRAVAHA-X
           </h1>
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            Emergency Evacuation System
+            Flood intelligence & safer routing
           </p>
         </div>
       </div>

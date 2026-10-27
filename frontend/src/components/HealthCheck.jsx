@@ -1,16 +1,43 @@
 import React, { useEffect, useState } from 'react';
-import { fetchHealthStatus } from '../services/api';
+import { estimateHealthRisk, fetchHealthStatus } from '../services/api';
 import { Activity, Database, GitBranch, Cpu, RefreshCw, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react';
 
 export default function HealthCheck() {
   const [health, setHealth] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [riskLoading, setRiskLoading] = useState(false);
+  const [riskResult, setRiskResult] = useState(null);
+  const [riskError, setRiskError] = useState(null);
 
   const checkHealth = async () => {
     setLoading(true);
-    const data = await fetchHealthStatus();
-    setHealth(data);
-    setLoading(false);
+    try {
+      const data = await fetchHealthStatus();
+      setHealth(data);
+    } catch (error) {
+      setHealth(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const runSampleHealthBaseline = async () => {
+    setRiskLoading(true);
+    setRiskError(null);
+    try {
+      const result = await estimateHealthRisk({
+        rainfall_mm: 180,
+        flood_duration_hours: 48,
+        sanitation_disruption: 0.6,
+        water_quality_concern: 0.5,
+        displaced_population_ratio: 0.2,
+      });
+      setRiskResult(result);
+    } catch (error) {
+      setRiskError(error.message);
+    } finally {
+      setRiskLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -104,6 +131,36 @@ export default function HealthCheck() {
               Last checked: {new Date(health.timestamp).toLocaleTimeString()}
             </p>
           )}
+
+          <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
+            <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+              <div>
+                <h3 className="text-sm font-semibold text-amber-200">Post-flood health baseline</h3>
+                <p className="mt-1 text-xs text-slate-400">Transparent screening aid using documented sample inputs.</p>
+              </div>
+              <button
+                onClick={runSampleHealthBaseline}
+                disabled={riskLoading}
+                className="rounded-lg bg-amber-500/15 px-3 py-2 text-xs font-semibold text-amber-200 transition hover:bg-amber-500/25 disabled:opacity-50"
+              >
+                {riskLoading ? 'Calculating...' : 'Run sample baseline'}
+              </button>
+            </div>
+            {riskResult && (
+              <div className="mt-4 grid gap-3 sm:grid-cols-[auto_1fr]">
+                <div className="rounded-lg bg-slate-950/50 p-3 text-center">
+                  <div className="text-2xl font-extrabold text-amber-300">{riskResult.score}</div>
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{riskResult.priority} priority</div>
+                </div>
+                <div className="text-xs leading-5 text-slate-300">
+                  <p><span className="font-semibold text-slate-100">Indicator:</span> {riskResult.indicator} ({riskResult.horizon})</p>
+                  <p><span className="font-semibold text-slate-100">Factors:</span> {riskResult.supporting_factors.join(', ')}</p>
+                  <p className="mt-1 text-amber-300">{riskResult.limitations[0]}</p>
+                </div>
+              </div>
+            )}
+            {riskError && <p className="mt-3 text-xs text-rose-300">{riskError}</p>}
+          </div>
         </div>
       ) : (
         <div className="py-8 text-center text-slate-400 text-sm">

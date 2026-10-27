@@ -128,7 +128,10 @@ export default function EvacuationAlertSystem({
 
   const simulateSMSAlert = (disaster) => {
     if (onRegisterPhone) onRegisterPhone(phoneNumber, userLocation);
-    alert(`✅ Your evacuation SMS request was sent for ${phoneNumber}.`);
+    alert(
+      `✅ Phone registered for evacuation alerts: ${phoneNumber}.\n\n` +
+      'An SMS will be sent when an administrator broadcasts an approved disaster alert.'
+    );
   };
 
   const playAlertSound = () => {
@@ -329,7 +332,7 @@ export default function EvacuationAlertSystem({
                       className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm"
                     >
                       <Phone className="w-4 h-4" />
-                      Send SMS to {phoneNumber}
+                      Register for SMS alerts
                     </button>
                   )}
 

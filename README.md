@@ -166,6 +166,25 @@ routing_cost = base_distance + (ml_blockage_probability × risk_weight_multiplie
 
 ## 🚀 Installation & Setup
 
+## PRAVAHA-X MVP surface
+
+The current application presents the Flood Casting routing system as a traceable
+PRAVAHA-X command centre:
+
+- **Overview:** Observe → Predict → Map → Decide → Alert status, Chennai network
+  counts, evidence labels, and explicit implementation limitations.
+- **Safer routing:** NetworkX routing incorporates road blockage probability and
+  confirmed closures.
+- **Incident workflow:** Disaster reports require administrator review before an
+  approved incident can broadcast an alert.
+- **Post-flood baseline:** `POST /api/health-risk` returns a documented,
+  rule-based surveillance-priority indicator. It is not a diagnosis, outbreak
+  confirmation, or validated epidemic forecast.
+
+The overview deliberately labels live backend data, sample/demo data, implemented
+features, and future work separately. External DNO simulation, live weather
+ingestion, and disease-specific model validation remain future work.
+
 ### System Requirements
 - **Python**: 3.10 or higher
 - **Node.js**: 18.0 or higher

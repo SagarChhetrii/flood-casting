@@ -27,7 +27,22 @@ class TestAPIEndpoints(unittest.TestCase):
         self.assertEqual(data["status"], "ok")
         self.assertIn("app", data)
 
-    # 2. GET /roads
+    # 2. POST /api/health-risk
+    def test_02_post_health_risk_baseline(self):
+        response = self.client.post("/api/health-risk", json={
+            "rainfall_mm": 180,
+            "flood_duration_hours": 48,
+            "sanitation_disruption": 0.6,
+            "water_quality_concern": 0.5,
+            "displaced_population_ratio": 0.2,
+        })
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["indicator"], "post-flood surveillance priority")
+        self.assertEqual(data["priority"], "WATCH")
+        self.assertIn("not an epidemic forecast", data["limitations"][0])
+
+    # 3. GET /roads
     def test_02_get_all_roads(self):
         response = self.client.get("/roads")
         self.assertEqual(response.status_code, 200)

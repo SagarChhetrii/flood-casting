@@ -11,6 +11,7 @@ export function Sidebar({
   onCloseMobile = () => { },
 }) {
   const navItems = [
+    { id: 'overview', label: 'PRAVAHA-X Overview', icon: 'dashboard' },
     { id: 'analysis', label: 'Route Analysis', icon: 'analytics' },
     { id: 'disasters', label: 'Disaster Manager', icon: 'warning', badge: pendingDisastersCount },
     { id: 'closures', label: 'Road Closures', icon: 'block' },
