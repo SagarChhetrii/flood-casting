@@ -1,120 +1,72 @@
-import React, { useState, useEffect } from 'react';
-import { checkBackendAvailability } from '../services/routingService.js';
+import React from 'react';
+import { AlertTriangle, Radio, User, Shield } from 'lucide-react';
 
 export default function Header({
-  lastSyncTimestamp = null,
-  pendingChangesCount = 0,
-  pendingDisastersCount = 0,
-  activeRoutingMode = 'online',
-  mapTheme = 'dark',
-  isSyncing = false,
-  onThemeChange = () => {},
   userRole = 'admin',
   onRoleToggle = () => {},
   onOpenReportModal = () => {},
-  onToggleMobileMenu = () => {},
+  apiConnected = true,
 }) {
-  const [apiConnected, setApiConnected] = useState(false);
-
-  useEffect(() => {
-    const checkStatus = async () => {
-      const isReachable = await checkBackendAvailability();
-      setApiConnected(isReachable);
-    };
-    checkStatus();
-    const interval = setInterval(checkStatus, 15000);
-    return () => clearInterval(interval);
-  }, []);
-
   return (
-    <header className="bg-surface text-on-surface w-full border-b border-outline-variant flex justify-between items-center px-sm sm:px-md md:px-lg h-14 z-40 shrink-0 gap-xs sm:gap-md shadow-xs">
-      {/* Left Section: Mobile Menu Toggle & Brand Title */}
-      <div className="flex items-center gap-xs sm:gap-sm min-w-0">
-        <button
-          onClick={onToggleMobileMenu}
-          className="md:hidden p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors cursor-pointer shrink-0"
-          title="Open Navigation Menu"
-        >
-          <span className="material-symbols-outlined text-xl">menu</span>
-        </button>
-
-        <div className="flex items-center gap-xs min-w-0">
-          <span className="material-symbols-outlined text-primary text-lg sm:text-xl font-bold shrink-0">radar</span>
-          <h1 className="text-xs sm:text-sm md:text-base font-extrabold text-primary tracking-wide flex items-center gap-xs truncate">
-            <span className="truncate">DISASTER OPERATIONS COMMAND</span>
-            <span className="text-[10px] bg-primary/15 text-primary px-1.5 py-0.5 rounded-full border border-primary/25 font-bold tracking-normal hidden xl:inline-block">
-              SIH 2026
-            </span>
+    <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-6 py-4 flex items-center justify-between shadow-sm">
+      {/* Brand */}
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+          <Radio className="w-6 h-6 text-white" />
+        </div>
+        <div>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+            Flood Casting
           </h1>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Emergency Evacuation System
+          </p>
         </div>
       </div>
 
-      {/* Right Section: Role Switcher, Report Button & Controls */}
-      <div className="flex items-center gap-xs sm:gap-sm shrink-0">
-        {/* Role Switcher */}
-        <div className="flex items-center bg-surface-container-low rounded-full p-0.5 border border-outline-variant">
+      {/* Actions */}
+      <div className="flex items-center gap-4">
+        {/* API Status */}
+        <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg">
+          <div className={`w-2 h-2 rounded-full ${apiConnected ? 'bg-green-500' : 'bg-red-500'}`} />
+          <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+            {apiConnected ? 'Online' : 'Offline'}
+          </span>
+        </div>
+
+        {/* Role Toggle */}
+        <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
           <button
             onClick={() => onRoleToggle('user')}
-            className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer ${
+            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${
               userRole === 'user'
-                ? 'bg-primary text-on-primary shadow-xs'
-                : 'text-on-surface-variant hover:text-on-surface'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
             }`}
-            title="Switch to Civilian User Mode"
           >
-            <span className="material-symbols-outlined text-xs">person</span>
-            <span className="text-[11px] sm:text-xs">Civilian</span>
+            <User className="w-4 h-4" />
+            Civilian
           </button>
-
           <button
             onClick={() => onRoleToggle('admin')}
-            className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer ${
+            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${
               userRole === 'admin'
-                ? 'bg-error text-on-error shadow-xs'
-                : 'text-on-surface-variant hover:text-on-surface'
+                ? 'bg-red-600 text-white shadow-sm'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
             }`}
-            title="Switch to Emergency Admin Control Mode"
           >
-            <span className="material-symbols-outlined text-xs">admin_panel_settings</span>
-            <span className="text-[11px] sm:text-xs">Admin</span>
+            <Shield className="w-4 h-4" />
+            Admin
           </button>
         </div>
 
-        {/* Quick Report Button */}
+        {/* Report Button */}
         <button
           onClick={onOpenReportModal}
-          className="px-2 py-1 sm:px-2.5 rounded-full bg-error/15 text-error font-semibold border border-error/30 hover:bg-error hover:text-on-error transition-all text-xs flex items-center gap-1 cursor-pointer active:scale-95 shrink-0"
-          title="Report a Disaster Incident"
+          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition-colors shadow-sm"
         >
-          <span className="material-symbols-outlined text-xs">add_alert</span>
-          <span className="hidden sm:inline text-xs">+ Report Disaster</span>
-        </button>
-
-        {/* Connection Status Badge */}
-        <div
-          className={`hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${
-            apiConnected
-              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-              : 'bg-rose-500/10 text-rose-400 border-rose-500/30'
-          }`}
-        >
-          <span
-            className={`w-1.5 h-1.5 rounded-full ${
-              apiConnected ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'
-            }`}
-          />
-          <span className="text-[11px]">{apiConnected ? 'API ONLINE' : 'OFFLINE'}</span>
-        </div>
-
-        {/* Theme Toggle */}
-        <button
-          onClick={() => onThemeChange(mapTheme === 'dark' ? 'light' : 'dark')}
-          className="p-1 sm:p-1.5 rounded-full text-on-surface-variant hover:bg-surface-container-high transition-colors cursor-pointer active:opacity-80 flex items-center justify-center shrink-0"
-          title="Toggle Map Theme"
-        >
-          <span className="material-symbols-outlined text-base sm:text-lg" data-icon="settings">
-            {mapTheme === 'dark' ? 'light_mode' : 'dark_mode'}
-          </span>
+          <AlertTriangle className="w-4 h-4" />
+          <span className="hidden sm:inline">Report Disaster</span>
         </button>
       </div>
     </header>

@@ -12,6 +12,10 @@ function getSanitizedApiBaseUrl() {
     if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
       return 'https://flood-casting.onrender.com/api';
     }
+    // Check if accessing from phone (network IP)
+    if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+      return `http://${window.location.hostname}:8000/api`;
+    }
     return 'http://localhost:8000/api';
   }
 
