@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, Bell, Navigation, MapPin, Phone } from 'lucide-react';
+import { NODE_COORDINATES } from '../config/nodeCoordinates.js';
 
 /**
  * Enhanced Evacuation Alert System with GPS Location Detection
@@ -9,7 +10,8 @@ export default function EvacuationAlertSystem({
   disasters,
   onAlertBroadcast,
   evacuationRoute,
-  onRequestRoute
+  onRequestRoute,
+  onRegisterPhone
 }) {
   const [activeAlerts, setActiveAlerts] = useState([]);
   const [userLocation, setUserLocation] = useState(null);
@@ -36,9 +38,9 @@ export default function EvacuationAlertSystem({
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setUserLocation({
+            node: mapCoordinatesToNode(position.coords.latitude, position.coords.longitude),
             lat: position.coords.latitude,
-            lng: position.coords.longitude,
-            node: mapCoordinatesToNode(position.coords.latitude, position.coords.longitude)
+            lng: position.coords.longitude
           });
           setLocationPermission('granted');
         },
@@ -50,17 +52,20 @@ export default function EvacuationAlertSystem({
     }
   };
 
-  // Map GPS coordinates to nearest node (simplified for demo)
+  // Map GPS coordinates to the nearest configured road-network node.
   const mapCoordinatesToNode = (lat, lng) => {
-    // In production, this would use actual geofencing
-    // For demo: randomly assign to show the feature
-    const nodes = ['A', 'B', 'C', 'D', 'E'];
-    return nodes[Math.floor(Math.random() * nodes.length)];
+    const routableNodes = ['A', 'B', 'C', 'D', 'E', 'Z'];
+    return Object.entries(NODE_COORDINATES)
+      .filter(([node]) => routableNodes.includes(node))
+      .reduce((nearest, [node, [nodeLat, nodeLng]]) => {
+      const distance = (nodeLat - lat) ** 2 + (nodeLng - lng) ** 2;
+      return distance < nearest.distance ? { node, distance } : nearest;
+      }, { node: 'A', distance: Number.POSITIVE_INFINITY }).node;
   };
 
   // Monitor active disasters and check if user is in danger
   useEffect(() => {
-    const activeDisasters = disasters.filter(d => d.status === 'ACTIVE');
+    const activeDisasters = disasters.filter(d => d.status === 'APPROVED');
 
     activeDisasters.forEach(disaster => {
       if (userLocation) {
@@ -81,11 +86,10 @@ export default function EvacuationAlertSystem({
   }, [disasters, userLocation]);
 
   const checkIfInDangerZone = (userLoc, disaster) => {
-    if (!userLoc || !disaster.affected_area) return false;
+    if (!userLoc || !disaster.affected_nodes) return false;
 
     // Check if user's detected node matches affected area
-    const affectedNodes = disaster.affected_area.split(',').map(n => n.trim());
-    return affectedNodes.includes(userLoc.node) || disaster.intensity > 0.7;
+    return disaster.affected_nodes.includes(userLoc.node) || disaster.severity > 0.7;
   };
 
   const triggerEvacuationAlert = (disaster) => {
@@ -117,18 +121,14 @@ export default function EvacuationAlertSystem({
     // Show alert panel
     setShowAlertPanel(true);
 
-    // Simulate SMS send (in production, this would call backend API)
-    if (phoneNumber) {
-      simulateSMSAlert(disaster);
+    if (phoneNumber && onRegisterPhone) {
+      onRegisterPhone(phoneNumber, userLocation);
     }
   };
 
   const simulateSMSAlert = (disaster) => {
-    console.log(`📱 SMS ALERT SENT TO: ${phoneNumber}`);
-    console.log(`Message: 🚨 EVACUATION ALERT: ${disaster.disaster_type} in your area. Check app for evacuation route.`);
-
-    // Show confirmation toast
-    alert(`✅ SMS Alert sent to ${phoneNumber}\n\nMessage: "${disaster.disaster_type} - Evacuate immediately. Check app for safe route."`);
+    if (onRegisterPhone) onRegisterPhone(phoneNumber, userLocation);
+    alert(`✅ Your evacuation SMS request was sent for ${phoneNumber}.`);
   };
 
   const playAlertSound = () => {
@@ -141,6 +141,7 @@ export default function EvacuationAlertSystem({
   const handleSavePhone = () => {
     if (phoneNumber.length >= 10) {
       localStorage.setItem('emergency_phone', phoneNumber);
+      if (onRegisterPhone && userLocation) onRegisterPhone(phoneNumber, userLocation);
       setShowPhoneInput(false);
       alert('✅ Phone number saved! You will receive SMS alerts when in danger zones.');
     } else {
@@ -179,7 +180,7 @@ export default function EvacuationAlertSystem({
                   type="tel"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder="+1 (555) 123-4567"
+                  placeholder="+91 9876543210"
                   className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-base focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:text-white"
                 />
               </div>
@@ -285,7 +286,7 @@ export default function EvacuationAlertSystem({
                       </div>
                     </div>
                     <span className="text-sm font-bold text-red-700 dark:text-red-300">
-                      {(alert.intensity * 100).toFixed(0)}%
+                      {(alert.severity * 100).toFixed(0)}%
                     </span>
                   </div>
 
@@ -296,10 +297,10 @@ export default function EvacuationAlertSystem({
 
                   {/* Details */}
                   <div className="flex flex-wrap gap-2 text-xs text-gray-600 dark:text-gray-400">
-                    {alert.affected_area && (
+                    {alert.affected_nodes?.length > 0 && (
                       <div className="flex items-center gap-1 bg-white dark:bg-gray-700 px-2 py-1 rounded-full">
                         <MapPin className="w-3 h-3" />
-                        {alert.affected_area}
+                        {alert.affected_nodes.join(', ')}
                       </div>
                     )}
                     {alert.people_count > 0 && (

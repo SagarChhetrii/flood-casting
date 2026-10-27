@@ -23,6 +23,8 @@ import {
   updateDisasterStatus,
   updateDisaster,
   deleteDisaster,
+  registerAlertSubscriber,
+  broadcastAlert,
 } from './services/api.js';
 import {
   saveNetworkData,
@@ -668,19 +670,28 @@ export default function App() {
         {/* Dynamic View Canvas based on activeTab */}
         <main className="flex-1 bg-surface-container-low overflow-y-auto flex flex-col p-md gap-md">
           {activeTab === 'disasters' ? (
-            <AdminDisasterManager
-              disasters={disasters}
-              roads={roads}
-              userRole={userRole}
-              statusFilter={disasterStatusFilter}
-              onStatusFilterChange={setDisasterStatusFilter}
-              onOpenReportModal={() => setIsReportModalOpen(true)}
-              onApproveDisaster={handleApproveDisaster}
-              onRejectDisaster={handleRejectDisaster}
-              onResolveDisaster={handleResolveDisaster}
-              onDeleteDisaster={handleDeleteDisaster}
-              onRefreshData={fetchDisastersData}
-            />
+            <>
+              <AdminAlertBroadcast
+                disasters={disasters}
+                onBroadcastAlert={async ({ disaster, message }) => {
+                  const result = await broadcastAlert(disaster.id, message);
+                  setInfoMessage(`Alert processed: ${result.delivered} delivered, ${result.failed} failed.`);
+                }}
+              />
+              <AdminDisasterManager
+                disasters={disasters}
+                roads={roads}
+                userRole={userRole}
+                statusFilter={disasterStatusFilter}
+                onStatusFilterChange={setDisasterStatusFilter}
+                onOpenReportModal={() => setIsReportModalOpen(true)}
+                onApproveDisaster={handleApproveDisaster}
+                onRejectDisaster={handleRejectDisaster}
+                onResolveDisaster={handleResolveDisaster}
+                onDeleteDisaster={handleDeleteDisaster}
+                onRefreshData={fetchDisastersData}
+              />
+            </>
           ) : activeTab === 'health' ? (
             <HealthCheck />
           ) : (
@@ -795,11 +806,23 @@ export default function App() {
       <EvacuationAlertSystem
         disasters={disasters}
         evacuationRoute={activeRoute}
+        onRegisterPhone={async (phoneNumber, location) => {
+          try {
+            await registerAlertSubscriber({
+              phone_number: phoneNumber,
+              node_id: location.node,
+              latitude: location.lat,
+              longitude: location.lng,
+            });
+          } catch (err) {
+            setError(`Could not register SMS alerts: ${err.message}`);
+          }
+        }}
         onRequestRoute={(disaster) => {
           // Auto-calculate evacuation route when alert is triggered
-          if (disaster.affected_area && shelters.length > 0) {
-            setSelectedStart(disaster.affected_area.split(',')[0] || 'A');
-            setSelectedDest(shelters[0].location_node || 'Z');
+          if (disaster.affected_nodes?.length > 0 && shelters.length > 0) {
+            setSelectedStart(disaster.affected_nodes[0] || 'A');
+            setSelectedDest(shelters.find(s => s.status === 'OPERATIONAL')?.location_node || 'Z');
             handleFindRoute();
           }
         }}

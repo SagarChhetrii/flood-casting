@@ -4,12 +4,22 @@ Provides thread-safe access to the singleton EvacuationRoadGraph instance.
 """
 
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, Optional
+from fastapi import Header, HTTPException, status
 from backend.app.routing.graph import EvacuationRoadGraph
 from backend.app.ml.predict import MLInferenceService
 from backend.app.ml.risk_service import calculate_routing_cost, RoadRiskService
 
 logger = logging.getLogger(__name__)
+
+
+def require_admin(x_role: Optional[str] = Header(None, alias="X-Role")) -> str:
+    if not x_role or x_role.lower() != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Administrator role is required for this action.",
+        )
+    return x_role
 
 # Global singleton graph instance
 _ACTIVE_GRAPH: EvacuationRoadGraph = None

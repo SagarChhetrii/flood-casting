@@ -4,7 +4,8 @@ Handles user disaster reporting and admin disaster lifecycle management.
 """
 
 from typing import Optional
-from fastapi import APIRouter, HTTPException, Query, Header, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from backend.app.api.deps import require_admin
 from backend.app.schemas.disasters import (
     DisasterCreate,
     DisasterUpdate,
@@ -58,17 +59,15 @@ def get_disaster(disaster_id: str):
 @router.post("/incidents", response_model=DisasterResponse, status_code=status.HTTP_201_CREATED)
 def create_disaster(
     payload: DisasterCreate,
-    x_role: Optional[str] = Header("user", alias="X-Role"),
-    is_admin: bool = Query(False, description="Set True if created by Admin"),
+    x_role: str = Depends(require_admin),
 ):
     """
     Report a new disaster incident.
     Civilians create disasters with 'PENDING' status for admin approval.
     Prevents duplicate report creation for active/pending road incidents.
     """
-    role_is_admin = is_admin or (x_role and x_role.lower() == "admin")
     try:
-        return disaster_store.create_disaster(payload, is_admin=role_is_admin)
+        return disaster_store.create_disaster(payload, is_admin=True)
     except ValueError as val_err:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -81,7 +80,7 @@ def create_disaster(
 def update_disaster_status(
     disaster_id: str,
     payload: DisasterStatusUpdate,
-    x_role: Optional[str] = Header("admin", alias="X-Role"),
+    x_role: str = Depends(require_admin),
 ):
     """
     [Admin Role] Update status of a disaster report (e.g. Approve, Reject, Resolve).
@@ -100,7 +99,7 @@ def update_disaster_status(
 def approve_incident(
     disaster_id: str,
     admin_notes: Optional[str] = Query(None, description="Optional admin note"),
-    x_role: Optional[str] = Header("admin", alias="X-Role"),
+    x_role: str = Depends(require_admin),
 ):
     """[Admin Role] Approve a disaster incident."""
     payload = DisasterStatusUpdate(status=DisasterStatus.APPROVED, admin_notes=admin_notes)
@@ -111,7 +110,7 @@ def approve_incident(
 def reject_incident(
     disaster_id: str,
     admin_notes: Optional[str] = Query(None, description="Optional admin note"),
-    x_role: Optional[str] = Header("admin", alias="X-Role"),
+    x_role: str = Depends(require_admin),
 ):
     """[Admin Role] Reject a disaster incident."""
     payload = DisasterStatusUpdate(status=DisasterStatus.REJECTED, admin_notes=admin_notes)
@@ -122,7 +121,7 @@ def reject_incident(
 def resolve_incident(
     disaster_id: str,
     admin_notes: Optional[str] = Query(None, description="Optional admin note"),
-    x_role: Optional[str] = Header("admin", alias="X-Role"),
+    x_role: str = Depends(require_admin),
 ):
     """[Admin Role] Resolve a disaster incident."""
     payload = DisasterStatusUpdate(status=DisasterStatus.RESOLVED, admin_notes=admin_notes)
@@ -134,7 +133,7 @@ def resolve_incident(
 def update_disaster_details(
     disaster_id: str,
     payload: DisasterUpdate,
-    x_role: Optional[str] = Header("admin", alias="X-Role"),
+    x_role: str = Depends(require_admin),
 ):
     """
     [Admin Role] Edit title, severity, description, or affected roads/nodes of a disaster.
@@ -152,7 +151,7 @@ def update_disaster_details(
 @router.delete("/incidents/{disaster_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_disaster(
     disaster_id: str,
-    x_role: Optional[str] = Header("admin", alias="X-Role"),
+    x_role: str = Depends(require_admin),
 ):
     """
     [Admin Role] Delete a disaster report.

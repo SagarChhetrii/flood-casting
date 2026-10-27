@@ -11,7 +11,7 @@ export default function AdminAlertBroadcast({ disasters, onBroadcastAlert }) {
   const [estimatedAffected, setEstimatedAffected] = useState(0);
   const [isBroadcasting, setIsBroadcasting] = useState(false);
 
-  const activeDisasters = disasters.filter(d => d.status === 'ACTIVE');
+  const activeDisasters = disasters.filter(d => d.status === 'APPROVED');
 
   const handleBroadcast = async () => {
     if (!selectedDisaster) {
@@ -23,13 +23,10 @@ export default function AdminAlertBroadcast({ disasters, onBroadcastAlert }) {
 
     const disaster = activeDisasters.find(d => d.id === selectedDisaster);
 
-    // Simulate broadcast
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
     if (onBroadcastAlert) {
-      onBroadcastAlert({
+      await onBroadcastAlert({
         disaster,
-        message: customMessage || disaster.description,
+        message: customMessage,
         timestamp: new Date().toISOString(),
         affected_count: estimatedAffected || disaster.people_count
       });
@@ -37,7 +34,7 @@ export default function AdminAlertBroadcast({ disasters, onBroadcastAlert }) {
 
     setIsBroadcasting(false);
     setCustomMessage('');
-    alert(`✓ Alert broadcast sent to ${estimatedAffected || disaster.people_count || 'affected'} users in ${disaster.affected_area}`);
+    alert(`✓ Alert broadcast sent for ${disaster.affected_nodes?.join(', ') || 'affected nodes'}`);
   };
 
   if (activeDisasters.length === 0) {
@@ -80,7 +77,7 @@ export default function AdminAlertBroadcast({ disasters, onBroadcastAlert }) {
           <option value="">-- Select Disaster --</option>
           {activeDisasters.map(disaster => (
             <option key={disaster.id} value={disaster.id}>
-              {disaster.disaster_type} - {disaster.affected_area} (Severity: {(disaster.intensity * 100).toFixed(0)}%)
+              {disaster.disaster_type} - {disaster.affected_nodes?.join(', ')} (Severity: {(disaster.severity * 100).toFixed(0)}%)
             </option>
           ))}
         </select>
@@ -101,7 +98,7 @@ export default function AdminAlertBroadcast({ disasters, onBroadcastAlert }) {
                 <div className="flex items-center gap-4 text-sm text-red-600 dark:text-red-400">
                   <div className="flex items-center gap-1">
                     <MapPin className="w-4 h-4" />
-                    <span>{disaster.affected_area}</span>
+                    <span>{disaster.affected_nodes?.join(', ')}</span>
                   </div>
                   {disaster.people_count > 0 && (
                     <div className="flex items-center gap-1">

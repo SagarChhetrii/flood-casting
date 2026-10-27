@@ -190,3 +190,19 @@ export async function deleteDisaster(disasterId, userRole = 'admin') {
   });
 }
 
+export async function registerAlertSubscriber(payload) {
+  return request('/alerts/subscribers', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function broadcastAlert(disasterId, message = '', userRole = 'admin') {
+  return request('/alerts/broadcast', {
+    method: 'POST',
+    headers: {
+      'X-Role': userRole,
+    },
+    body: JSON.stringify({ disaster_id: disasterId, message: message || null }),
+  });
+}

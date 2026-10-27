@@ -182,23 +182,29 @@ cd flood-casting
 ### 2. Backend Setup
 
 ```bash
-# Navigate to backend directory
-cd backend
+# From the repository root, create an isolated Python environment.
+# This avoids macOS/Homebrew's externally-managed-environment error.
+python3 -m venv .venv
 
-# Create Python virtual environment
-python -m venv venv
-
-# Activate virtual environment
 # On macOS/Linux:
-source venv/bin/activate
+source .venv/bin/activate
 # On Windows:
-venv\Scripts\activate
+.venv\Scripts\activate
 
 # Install Python dependencies
-pip install -r requirements.txt
+python -m pip install --upgrade pip
+python -m pip install -r backend/requirements.txt
 
-# Start FastAPI development server
-python -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload
+# Start FastAPI development server from the repository root
+python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+If you close the terminal, activate the environment again before running the
+backend:
+
+```bash
+source .venv/bin/activate
+python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 Backend API will be available at: **http://localhost:8000**  
@@ -612,6 +618,12 @@ CORS_ORIGINS=https://your-frontend.vercel.app,http://localhost:5173
 
 # Optional: ML model path override
 MODEL_PATH=backend/app/ml/artifacts/best_model_pipeline.joblib
+
+# Optional: enable real SMS delivery through Twilio.
+# Without these values, SMS is logged by the backend for local testing.
+TWILIO_ACCOUNT_SID=your_account_sid
+TWILIO_AUTH_TOKEN=your_auth_token
+TWILIO_FROM_NUMBER=+15551234567
 ```
 
 #### Frontend (`frontend/.env`)
@@ -619,6 +631,18 @@ MODEL_PATH=backend/app/ml/artifacts/best_model_pipeline.joblib
 # Backend API base URL
 VITE_API_BASE_URL=http://localhost:8000
 ```
+
+### Evacuation SMS workflow
+
+1. A user enters a phone number in international format (for example
+   `+91 9876543210`) and allows browser location access.
+2. The frontend maps the GPS position to the nearest configured road-network node
+   and registers the phone/node pair at `POST /api/alerts/subscribers`.
+3. Only an administrator can create/approve incidents and use **Emergency Alert Broadcast**.
+4. The backend matches registered phones in the incident's affected nodes, calculates
+   the safest route to the nearest operational shelter, and sends a short route SMS.
+5. Local development uses console delivery. Configure the Twilio variables above for
+   real SMS delivery; never commit credentials to the repository.
 
 ### Customizing Risk Weight
 

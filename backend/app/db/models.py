@@ -40,3 +40,15 @@ class AuditLogModel(Base):
     notes = Column(Text, nullable=True)
 
     incident = relationship("IncidentModel", back_populates="audit_logs")
+
+
+class AlertSubscriberModel(Base):
+    __tablename__ = "alert_subscribers"
+
+    phone_number = Column(String, primary_key=True)
+    node_id = Column(String, nullable=False, index=True)
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
+    enabled = Column(Integer, default=1, nullable=False)
+    created_at = Column(String, nullable=False)
+    updated_at = Column(String, nullable=False)

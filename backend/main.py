@@ -23,6 +23,7 @@ from backend.app.api.routes import (
     routing_router,
     shelters_router,
     disasters_router,
+    alerts_router,
 )
 
 from backend.app.routing.models import (
@@ -114,11 +115,13 @@ app.include_router(roads_router)
 app.include_router(routing_router)
 app.include_router(shelters_router)
 app.include_router(disasters_router)
+app.include_router(alerts_router)
 
 app.include_router(roads_router, prefix=settings.API_PREFIX)
 app.include_router(routing_router, prefix=settings.API_PREFIX)
 app.include_router(shelters_router, prefix=settings.API_PREFIX)
 app.include_router(disasters_router, prefix=settings.API_PREFIX)
+app.include_router(alerts_router, prefix=settings.API_PREFIX)
 
 
 

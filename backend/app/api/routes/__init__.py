@@ -7,6 +7,7 @@ from backend.app.api.routes.roads import router as roads_router
 from backend.app.api.routes.routing import router as routing_router
 from backend.app.api.routes.shelters import router as shelters_router
 from backend.app.api.routes.disasters import router as disasters_router
+from backend.app.api.routes.alerts import router as alerts_router
 
 __all__ = [
     "health_router",
@@ -14,5 +15,5 @@ __all__ = [
     "routing_router",
     "shelters_router",
     "disasters_router",
+    "alerts_router",
 ]
-
