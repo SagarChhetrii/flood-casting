@@ -5,7 +5,7 @@ Handles user disaster reporting and admin disaster lifecycle management.
 
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from backend.app.api.deps import require_admin
+from backend.app.api.deps import require_admin, require_reporter_role
 from backend.app.schemas.disasters import (
     DisasterCreate,
     DisasterUpdate,
@@ -59,7 +59,7 @@ def get_disaster(disaster_id: str):
 @router.post("/incidents", response_model=DisasterResponse, status_code=status.HTTP_201_CREATED)
 def create_disaster(
     payload: DisasterCreate,
-    x_role: str = Depends(require_admin),
+    x_role: str = Depends(require_reporter_role),
 ):
     """
     Report a new disaster incident.
@@ -67,7 +67,7 @@ def create_disaster(
     Prevents duplicate report creation for active/pending road incidents.
     """
     try:
-        return disaster_store.create_disaster(payload, is_admin=True)
+        return disaster_store.create_disaster(payload, is_admin=x_role == "admin")
     except ValueError as val_err:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,

@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Polyline, Marker, Popup, CircleMarker, Tooltip
 import L from 'leaflet';
 import { getNodeCoordinates, DEFAULT_MAP_ZOOM } from '../config/nodeCoordinates.js';
 import MapThemeToggle from './MapThemeToggle.jsx';
-import { Move, ShieldAlert, ChevronDown, ChevronUp, Layers } from 'lucide-react';
+import { Move, ShieldAlert, ChevronDown, ChevronUp, Layers, Maximize2, Minimize2 } from 'lucide-react';
 
 const CHENNAI_CENTER = [13.0827, 80.2707];
 
@@ -14,7 +14,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-function MapInvalidateSize() {
+function MapInvalidateSize({ isFullscreen }) {
   const map = useMap();
   useEffect(() => {
     map.invalidateSize();
@@ -26,7 +26,7 @@ function MapInvalidateSize() {
       clearTimeout(timer2);
       clearTimeout(timer3);
     };
-  }, [map]);
+  }, [map, isFullscreen]);
   return null;
 }
 
@@ -204,6 +204,34 @@ export default function EvacuationMap({
 
   const isLight = mapTheme === 'light';
   const [isLegendOpen, setIsLegendOpen] = React.useState(true);
+  const [isFullscreen, setIsFullscreen] = React.useState(false);
+  const [isNativeFullscreen, setIsNativeFullscreen] = React.useState(false);
+  const mapShellRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsNativeFullscreen(document.fullscreenElement === mapShellRef.current);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = async () => {
+    if (document.fullscreenElement === mapShellRef.current) {
+      await document.exitFullscreen();
+      return;
+    }
+
+    if (mapShellRef.current?.requestFullscreen) {
+      try {
+        await mapShellRef.current.requestFullscreen();
+        return;
+      } catch {
+        // Fall back to the in-app expanded mode when browser fullscreen is blocked.
+      }
+    }
+    setIsFullscreen((current) => !current);
+  };
 
   const getNodePos = (nodeId) => {
     if (nodeCoordinatesState && nodeCoordinatesState[nodeId]) {
@@ -241,14 +269,27 @@ export default function EvacuationMap({
     }
   });
   return (
-    <div className="col-span-12 lg:col-span-7 xl:col-span-8 min-w-0 min-h-0 w-full bg-surface-container-lowest border border-outline-variant rounded-2xl flex flex-col overflow-hidden relative shadow-md h-[380px] sm:h-[450px] lg:h-full lg:max-h-full min-h-[350px] lg:min-h-0">
+    <div
+      ref={mapShellRef}
+      className={`map-shell col-span-12 lg:col-span-7 xl:col-span-8 min-w-0 min-h-0 w-full bg-surface-container-lowest border border-outline-variant rounded-2xl flex flex-col overflow-hidden relative shadow-md h-[380px] sm:h-[450px] lg:h-full lg:max-h-full min-h-[350px] lg:min-h-0 ${isFullscreen || isNativeFullscreen ? 'map-shell-expanded' : ''}`}
+    >
       {/* Live Telemetry Banner Overlay */}
       <div className="absolute top-md left-md right-md flex justify-between items-start z-[450] pointer-events-none">
         <div className="pointer-events-auto bg-surface-container-lowest bg-opacity-85 backdrop-blur-sm border border-outline-variant p-sm rounded shadow-sm">
-          <span className="font-label-sm text-label-sm text-primary font-bold tracking-wider">
-            LIVE TELEMETRY
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="status-dot status-dot-green" />
+            <span className="font-label-sm text-label-sm text-primary font-bold tracking-wider">LIVE TELEMETRY</span>
+          </div>
         </div>
+        <button
+          onClick={toggleFullscreen}
+          className="map-fullscreen-button pointer-events-auto"
+          title={isFullscreen || isNativeFullscreen ? 'Exit fullscreen map' : 'Open map fullscreen'}
+          aria-label={isFullscreen || isNativeFullscreen ? 'Exit fullscreen map' : 'Open map fullscreen'}
+        >
+          {isFullscreen || isNativeFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+          <span>{isFullscreen || isNativeFullscreen ? 'Exit map' : 'Fullscreen'}</span>
+        </button>
       </div>
 
       {/* Edit Mode Banner */}
@@ -266,7 +307,7 @@ export default function EvacuationMap({
         style={{ height: '100%', width: '100%' }}
         className="w-full h-full"
       >
-        <MapInvalidateSize />
+        <MapInvalidateSize isFullscreen={isFullscreen || isNativeFullscreen} />
         <MapAutoBounds nodes={allNodes} getNodePos={getNodePos} />
 
         {isLight ? (

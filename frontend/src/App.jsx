@@ -4,7 +4,6 @@ import RouteControls from './components/RouteControls';
 import Sidebar from './components/Sidebar';
 import EvacuationMap from './components/EvacuationMap';
 import LeftNetworkMetrics from './components/LeftNetworkMetrics';
-import RightPanel from './components/RightPanel';
 import ShelterInfoModal from './components/ShelterInfoModal';
 import ErrorBanner from './components/ErrorBanner';
 import HealthCheck from './components/HealthCheck';
@@ -45,7 +44,9 @@ export default function App() {
   const [roads, setRoads] = useState([]);
   const [shelters, setShelters] = useState([]);
   const [disasters, setDisasters] = useState([]);
-  const [activeTab, setActiveTab] = useState('analysis');
+  // Start with the decision overview; the map is an operational workspace,
+  // not the first explanation a new user should see.
+  const [activeTab, setActiveTab] = useState('overview');
   const [userRole, setUserRole] = useState(() => {
     try {
       return localStorage.getItem('evacuation_user_role') || 'admin';
@@ -599,7 +600,7 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <div className={`flex-1 flex flex-col transition-all duration-300 ml-0 ${isSidebarCollapsed ? 'md:ml-16' : 'md:ml-56'} h-screen overflow-hidden`}>
+      <div className={`flex-1 flex flex-col transition-all duration-300 ml-0 ${isSidebarCollapsed ? 'md:ml-16' : 'md:ml-60'} h-screen overflow-hidden`}>
 
         {/* Top Header */}
         <Header
@@ -611,6 +612,8 @@ export default function App() {
           isSyncing={isSyncing}
           onThemeChange={handleThemeChange}
           userRole={userRole}
+          activeTab={activeTab}
+          apiConnected={apiConnected}
           onRoleToggle={handleRoleToggle}
           onOpenReportModal={() => setIsReportModalOpen(true)}
           onToggleMobileMenu={() => setIsMobileSidebarOpen(prev => !prev)}
@@ -618,11 +621,11 @@ export default function App() {
 
         <ErrorBanner error={error} onClose={() => setError(null)} />
         {infoMessage && !error && (
-          <div className="bg-surface-container-high border-b border-outline-variant px-lg py-xs text-body-sm text-primary flex items-center justify-between shrink-0">
+          <div className="status-banner status-banner-info">
             <span>{infoMessage}</span>
             <button
               onClick={() => setInfoMessage(null)}
-              className="text-primary font-bold hover:opacity-80 ml-md"
+              className="font-bold text-sky-200 hover:text-white"
             >
               &times;
             </button>
@@ -669,7 +672,7 @@ export default function App() {
         )}
 
         {/* Dynamic View Canvas based on activeTab */}
-        <main className="flex-1 min-w-0 min-h-0 bg-surface-container-low overflow-y-auto flex flex-col p-md gap-md">
+        <main className="app-main">
           {activeTab === 'overview' ? (
             <PravahaOverview
               roads={roads}
@@ -705,6 +708,20 @@ export default function App() {
             <HealthCheck />
           ) : (
             <div className="flex-1 flex flex-col gap-sm min-h-0">
+              <section className="workspace-intro">
+                <div>
+                  <p className="eyebrow text-sky-300">OPERATIONAL WORKSPACE</p>
+                  <h2 className="mt-1 text-xl font-bold text-white">Safer route planning</h2>
+                  <p className="mt-1 max-w-2xl text-sm text-slate-400">
+                    Choose an origin and shelter, set how strongly to penalize flood risk, then calculate a route.
+                    Click a road on the map to simulate a closure.
+                  </p>
+                </div>
+                <div className="workspace-intro-note">
+                  <span className="status-dot status-dot-green" />
+                  <span>{apiConnected ? 'Connected to live backend' : 'Using cached network data'}</span>
+                </div>
+              </section>
               {/* Compact Horizontal Telemetry Metrics Bar */}
               <LeftNetworkMetrics
                 routeData={activeRoute}
@@ -731,9 +748,8 @@ export default function App() {
                 isBlockingRoadId={isBlockingRoadId}
               />
 
-              {/* Map-First 12-Column Operational Grid */}
-              <div className="flex-1 min-w-0 min-h-0 w-full grid grid-cols-12 gap-md auto-rows-fr">
-                {/* Primary Operational Focus: Dominant Telemetry Map (~65% width) */}
+              {/* Full-width map workspace */}
+              <div className="route-map-workspace flex-1 min-w-0 min-h-0 w-full">
                 <EvacuationMap
                   roads={roads}
                   shelters={shelters}
@@ -755,18 +771,6 @@ export default function App() {
                   onSelectDisaster={(disaster) => {
                     setActiveTab('disasters');
                   }}
-                />
-
-                {/* Secondary Operational Focus: Timeline Segment Breakdown (~35% width) */}
-                <RightPanel
-                  activeRoute={activeRoute}
-                  roads={roads}
-                  disasters={disasters}
-                  selectedStart={selectedStart}
-                  selectedDest={selectedDest}
-                  onBlockRoad={handleBlockRoad}
-                  isBlockingRoadId={isBlockingRoadId}
-                  onRecalculateRoute={handleFindRoute}
                 />
               </div>
             </div>

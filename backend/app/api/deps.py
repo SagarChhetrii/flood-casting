@@ -21,6 +21,17 @@ def require_admin(x_role: Optional[str] = Header(None, alias="X-Role")) -> str:
         )
     return x_role
 
+
+def require_reporter_role(x_role: Optional[str] = Header(None, alias="X-Role")) -> str:
+    """Allow civilian reports while preserving admin-only lifecycle actions."""
+    normalized_role = (x_role or "user").lower()
+    if normalized_role not in {"user", "admin"}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Role must be either user or admin.",
+        )
+    return normalized_role
+
 # Global singleton graph instance
 _ACTIVE_GRAPH: EvacuationRoadGraph = None
 

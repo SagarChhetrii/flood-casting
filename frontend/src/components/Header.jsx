@@ -1,72 +1,82 @@
 import React from 'react';
-import { AlertTriangle, Radio, User, Shield } from 'lucide-react';
+import { AlertTriangle, Menu, Radio, User, Shield, Wifi, WifiOff } from 'lucide-react';
 
 export default function Header({
   userRole = 'admin',
   onRoleToggle = () => {},
   onOpenReportModal = () => {},
-  apiConnected = true,
+  apiConnected = false,
+  activeTab = 'analysis',
+  pendingDisastersCount = 0,
+  activeRoutingMode = 'offline',
+  isSyncing = false,
+  onToggleMobileMenu = () => {},
 }) {
+  const pageTitles = {
+    overview: ['PRAVAHA-X Overview', 'Decision support for urban flood preparedness'],
+    analysis: ['Route Analysis', 'Risk-aware evacuation planning'],
+    disasters: ['Incident Command', 'Review hazards and coordinate alerts'],
+    closures: ['Road Closures', 'Monitor and simulate network disruption'],
+    health: ['System Health', 'Backend readiness and recovery indicators'],
+  };
+  const [title, subtitle] = pageTitles[activeTab] || pageTitles.analysis;
+
   return (
-    <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-6 py-4 flex items-center justify-between shadow-sm">
-      {/* Brand */}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-          <Radio className="w-6 h-6 text-white" />
+    <header className="app-header">
+      <div className="flex min-w-0 items-center gap-3">
+        <button
+          onClick={onToggleMobileMenu}
+          className="icon-button md:hidden"
+          aria-label="Open navigation"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+        <div className="brand-mark">
+          <Radio className="h-5 w-5 text-white" />
         </div>
-        <div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-            PRAVAHA-X
-          </h1>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            Flood intelligence & safer routing
-          </p>
+        <div className="min-w-0">
+          <p className="eyebrow text-sky-300">PRAVAHA-X / CHENNAI</p>
+          <h1 className="truncate text-base font-bold text-white">{title}</h1>
+          <p className="hidden truncate text-xs text-slate-400 sm:block">{subtitle}</p>
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center gap-4">
-        {/* API Status */}
-        <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg">
-          <div className={`w-2 h-2 rounded-full ${apiConnected ? 'bg-green-500' : 'bg-red-500'}`} />
-          <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-            {apiConnected ? 'Online' : 'Offline'}
-          </span>
+      <div className="flex items-center gap-2 sm:gap-3">
+        <div className={`connection-pill ${apiConnected ? 'connection-pill-live' : 'connection-pill-offline'}`}>
+          {apiConnected ? <Wifi className="h-3.5 w-3.5" /> : <WifiOff className="h-3.5 w-3.5" />}
+          <span>{apiConnected ? 'Backend live' : 'Offline mode'}</span>
+          <span className="hidden text-slate-500 sm:inline">· {activeRoutingMode}</span>
+          {isSyncing && <span className="ml-1 animate-pulse text-sky-300">syncing</span>}
         </div>
 
-        {/* Role Toggle */}
-        <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+        <div className="hidden items-center gap-2 text-xs text-slate-400 lg:flex">
+          <span className="status-dot status-dot-amber" />
+          {pendingDisastersCount} pending review
+        </div>
+
+        <div className="role-switcher">
           <button
             onClick={() => onRoleToggle('user')}
-            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${
-              userRole === 'user'
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-            }`}
+            className={userRole === 'user' ? 'role-button role-button-user-active' : 'role-button'}
+            aria-label="Use civilian mode"
           >
-            <User className="w-4 h-4" />
-            Civilian
+            <User className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Civilian</span>
           </button>
           <button
             onClick={() => onRoleToggle('admin')}
-            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${
-              userRole === 'admin'
-                ? 'bg-red-600 text-white shadow-sm'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-            }`}
+            className={userRole === 'admin' ? 'role-button role-button-admin-active' : 'role-button'}
+            aria-label="Use administrator mode"
           >
-            <Shield className="w-4 h-4" />
-            Admin
+            <Shield className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Admin</span>
           </button>
         </div>
 
-        {/* Report Button */}
-        <button
-          onClick={onOpenReportModal}
-          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition-colors shadow-sm"
-        >
-          <AlertTriangle className="w-4 h-4" />
-          <span className="hidden sm:inline">Report Disaster</span>
+        <button onClick={onOpenReportModal} className="primary-action">
+          <AlertTriangle className="h-4 w-4" />
+          <span className="hidden sm:inline">Report hazard</span>
+          <span className="sm:hidden">Report</span>
         </button>
       </div>
     </header>
