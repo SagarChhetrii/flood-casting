@@ -36,7 +36,7 @@ This is the complete, beginner-friendly, step-by-step deployment guide for deplo
 ## Prerequisites
 
 Before starting, ensure you have:
-1. A **GitHub** account with access to `https://github.com/shravanijadhav09/disaster-evacuation-route-optimizer.git`.
+1. A **GitHub** account with access to `https://github.com/SagarChhetrii/flood-casting.git`.
 2. A free **Supabase** account ([https://supabase.com](https://supabase.com)).
 3. A free **Render** account ([https://render.com](https://render.com)).
 4. A free **Vercel** account ([https://vercel.com](https://vercel.com)).
@@ -154,7 +154,7 @@ Before pushing code to GitHub, ensure no sensitive files or environment variable
 ### 5.1 Create Render Web Service
 1. Log into [Render Dashboard](https://dashboard.render.com).
 2. Click **New +** $\rightarrow$ **Web Service**.
-3. Connect your GitHub repository: `shravanijadhav09/disaster-evacuation-route-optimizer`.
+3. Connect your GitHub repository: `SagarChhetrii/flood-casting`.
 
 ### 5.2 Configure Service Settings
 - **Name**: `disaster-evacuation-backend`
@@ -205,7 +205,7 @@ Once Render deployment shows `Live`:
 ### 8.1 Import Project into Vercel
 1. Log into [Vercel Dashboard](https://vercel.com/dashboard).
 2. Click **Add New...** $\rightarrow$ **Project**.
-3. Import GitHub repository: `shravanijadhav09/disaster-evacuation-route-optimizer`.
+3. Import GitHub repository: `SagarChhetrii/flood-casting`.
 
 ### 8.2 Configure Build Settings
 - **Framework Preset**: `Vite`

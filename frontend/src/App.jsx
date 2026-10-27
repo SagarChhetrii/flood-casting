@@ -12,6 +12,8 @@ import ReportDisasterModal from './components/ReportDisasterModal';
 import AdminDisasterManager from './components/AdminDisasterManager';
 import NotificationToast from './components/NotificationToast';
 import CivilianSubmissionModal from './components/CivilianSubmissionModal';
+import EvacuationAlertSystem from './components/EvacuationAlertSystem';
+import AdminAlertBroadcast from './components/AdminAlertBroadcast';
 import {
   getRoads,
   getShelters,
@@ -788,6 +790,20 @@ export default function App() {
           onClose={() => setCivilianSubmissionModalData(null)}
         />
       )}
+
+      {/* NEW: Evacuation Alert System */}
+      <EvacuationAlertSystem
+        disasters={disasters}
+        evacuationRoute={activeRoute}
+        onRequestRoute={(disaster) => {
+          // Auto-calculate evacuation route when alert is triggered
+          if (disaster.affected_area && shelters.length > 0) {
+            setSelectedStart(disaster.affected_area.split(',')[0] || 'A');
+            setSelectedDest(shelters[0].location_node || 'Z');
+            handleFindRoute();
+          }
+        }}
+      />
     </div>
   );
 }

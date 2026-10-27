@@ -10,7 +10,7 @@ function getSanitizedApiBaseUrl() {
 
   if (!raw) {
     if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
-      return 'https://disaster-evacuation-route-optimizer.onrender.com/api';
+      return 'https://flood-casting.onrender.com/api';
     }
     return 'http://localhost:8000/api';
   }
