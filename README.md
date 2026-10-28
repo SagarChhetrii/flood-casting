@@ -1,4 +1,4 @@
-# Flood Casting - Real-Time Disaster Evacuation System
+# Pravaha-X - Real-Time Disaster Evacuation System
 
 **Intelligent evacuation routing with instant alerts and ML-powered risk prediction**
 
